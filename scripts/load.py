@@ -101,15 +101,15 @@ def main():
     print('[3/5] label 적재 완료', flush=True)
 
     bulk_insert(c, 'work', ['work_id', 'title', 'author', 'translator', 'genre', 'period_raw', 'period_norm', 'publish_year'],
-                list(works.values()), 300)
+                list(works.values()), 1500)
     print(f'[4/5] work {len(works)}건 적재 완료 ({time.time()-t0:.0f}s)', flush=True)
 
     n = bulk_insert(c, 'sentence', ['id', 'work_id', 'recitation_src_id', 'seq', 'origin_text', 'ptr', 'vote_total', 'vote_agree', 'agree_ratio'],
-                    sentences, 300)
+                    sentences, 1500)
     print(f'[5a] sentence {n}건 적재 완료 ({time.time()-t0:.0f}s)', flush=True)
 
     slrows = [(sid, labels[key]) for (sid, key) in sent_labels]
-    n = bulk_insert(c, 'sentence_label', ['sentence_id', 'label_id'], slrows, 400)
+    n = bulk_insert(c, 'sentence_label', ['sentence_id', 'label_id'], slrows, 6000)
     print(f'[5b] sentence_label {n}건 적재 완료  (총 {time.time()-t0:.0f}s)', flush=True)
 
 if __name__ == '__main__':

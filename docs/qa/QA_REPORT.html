@@ -1,0 +1,160 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>마음동굴 QA/QC 보고서</title>
+<style>
+  :root{--bg:#f4f1ea;--ink:#2e2a24;--accent:#b5654a;--card:#fbfaf6;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Nanum Myeongjo',Georgia,serif;line-height:1.7}
+  .wrap{max-width:1000px;margin:0 auto;padding:3rem 1.5rem}
+  h1{font-size:2.2rem;margin:0 0 .3rem;letter-spacing:.03em}
+  .sub{color:#8a7d66;margin:0 0 2rem}
+  .badge{display:inline-block;padding:.5rem 1rem;border-radius:999px;font-weight:700;margin:.2rem .4rem .2rem 0}
+  .ok{background:#e3efe1;color:#2f6b3a}
+  .bad{background:#f3dede;color:#a33}
+  h2{margin:2.6rem 0 1rem;padding-bottom:.4rem;border-bottom:2px solid #e3dccb}
+  pre{background:#26221c;color:#e9e3d6;padding:1.2rem 1.4rem;border-radius:12px;overflow:auto;
+      font-family:ui-monospace,Menlo,monospace;font-size:.82rem;line-height:1.55;white-space:pre-wrap}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.4rem;margin-top:1rem}
+  figure{margin:0;background:var(--card);border:1px solid #e3dccb;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(120,100,70,.1)}
+  figure img{width:100%;display:block;border-bottom:1px solid #eee}
+  figcaption{padding:.7rem .9rem;font-size:.82rem;color:#6b6353}
+  table{width:100%;border-collapse:collapse;margin-top:1rem;font-size:.92rem}
+  th,td{text-align:left;padding:.6rem .7rem;border-bottom:1px solid #e3dccb}
+  th{color:#8a7d66;font-weight:700}
+  .meta{color:#8a7d66;font-size:.85rem}
+</style></head><body><div class="wrap">
+  <h1>마음동굴 — QA/QC 보고서</h1>
+  <p class="sub">문학 낭송 데이터 기반 감정 위로 카드 서비스 · 검증일 2026-06-17</p>
+  <div>
+    <span class="badge ok">통과 41</span>
+    <span class="badge ok">실패 0</span>
+    <span class="meta">Phase 1 = 순수 로직·실제 LLM(Haiku) / Phase 2 = DB 검색·선별·편지 풀 e2e</span>
+  </div>
+
+  <h2>1. 검증 범위</h2>
+  <table>
+    <tr><th>단계</th><th>검증 내용</th><th>방식</th></tr>
+    <tr><td>2 감정분석(D9)</td><td>부정어 사전 1차 점수 + LLM 맥락 보정, max 결합</td><td>단위+실제 LLM</td></tr>
+    <tr><td>루브릭(D14)</td><td>위기강도=max(부정정서,이탈의사), L0~L4·MTSS·관리자플래그</td><td>단위</td></tr>
+    <tr><td>매칭방향(D13)</td><td>공감/전환/축하/들어주기, 위기 시 슬픈문장 회피</td><td>단위</td></tr>
+    <tr><td>3·4 검색·선별</td><td>감정라벨 필터+품질(동의율≥0.8)→맥락 1문장</td><td>e2e(실 DB)</td></tr>
+    <tr><td>5 카드·편지</td><td>문구 강조 + 2문장 편지, audience 톤 분기</td><td>e2e(실 LLM)</td></tr>
+    <tr><td>안전</td><td>위기 시 상담안내 노출 + 관리자 플래그 적재</td><td>단위+e2e</td></tr>
+  </table>
+
+  <h2>2. 실제 앱 화면 (스크린 캡처)</h2>
+  <div class="grid">
+    <figure><img src="shots/01-landing.png" alt="01-landing.png"><figcaption>랜딩 — 두 동굴 입구(초등/대학)</figcaption></figure>
+    <figure><img src="shots/02-child-input.png" alt="02-child-input.png"><figcaption>초등 입력 화면 — 이름·나이·마음(로그인 없음)</figcaption></figure>
+    <figure><img src="shots/03-child-comfort.png" alt="03-child-comfort.png"><figcaption>초등 · 속상한 글 → 공감 카드 + 편지</figcaption></figure>
+    <figure><img src="shots/04-child-brag.png" alt="04-child-brag.png"><figcaption>초등 · 자랑 글 → 들어주기 카드 + 편지</figcaption></figure>
+    <figure><img src="shots/05-adult-crisis.png" alt="05-adult-crisis.png"><figcaption>대학 · 위기 글 → 전환 카드 + 위기상담 안내</figcaption></figure>
+    <figure><img src="shots/06-adult-brag.png" alt="06-adult-brag.png"><figcaption>대학 · 자랑 글 → 들어주기 카드 + 편지</figcaption></figure>
+  </div>
+
+  <h2>3. Phase 1 — 로직 · 실제 LLM 분류</h2>
+  <pre>
+=== [1] 사전(부정어/위기어) 점수 ===
+  ✅ 일상 글 → 축A 0
+  ✅ 부정어 다수 → 축A ≥3
+  ✅ 자퇴 언급 → 축B = 3
+  ✅ 위기어 → 축A = 3
+
+=== [2] 루브릭 레벨/티어/플래그 (D14) ===
+  ✅ 부정 0 → L0, tier1, flag none
+  ✅ 부정 2 → L2, tier2, watch, 위기안내 X
+  ✅ 부정 3 → L3, careMode, 위기안내 O, candidate
+  ✅ 이탈의사 4 → L4, alert (max축 반영)
+  ✅ max(1,3)=L3 (둘 중 높은 축)
+
+=== [3] 매칭 방향 (D13 C) ===
+  ✅ 기쁜소식 → 축하
+  ✅ 자랑 → 들어주기
+  ✅ 털어놓기(경미) → 공감
+  ✅ 위기(L4)면 의도 무관 → 전환(안전)
+  ✅ 공감 → 같은 결(슬픔/상처) 후보
+  ✅ 축하 → 기쁨 후보
+  ✅ 위기 전환 → 기쁨 계열(슬픈 문장 회피)
+
+=== [4] audience 분기 ===
+  ✅ child/adult 프로필 분리
+  ✅ 위기 안내 L4 노출(둘 다)
+  ✅ 위기 안내 L1 미노출
+  ✅ 초등 안내=1388, 대학 안내=109/정신건강
+
+=== [5] 실제 LLM 감정분석 (Haiku) ===
+  • "오늘 시험 100점 맞았어! 너무 신나!…"
+     → emo=기쁨 negA=0 dropB=0 intent=기쁜소식 | L0 dir=축하 flag=none
+     기대: 기쁨/낮은 부정도
+  • "요즘 학교 가기 싫고 다 의미 없어. 그냥 …"
+     → emo=슬픔,분노,불안 negA=3 dropB=3 intent=털어놓기 | L3 dir=전환 flag=candidate
+     기대: 높은 이탈의사
+  • "친구가 내 그림 칭찬해줬어. 자랑하고 싶어서…"
+     → emo=기쁨 negA=0 dropB=0 intent=자랑 | L0 dir=들어주기 flag=none
+     기대: 자랑/긍정
+  • "별일 없었어. 그냥 평범한 하루.…"
+     → emo=무감정 negA=0 dropB=0 intent=일상 | L0 dir=공감 flag=none
+     기대: 일상/무감정
+  ✅ 명백한 위기 글 → L≥3 (안전 게이트 작동)
+  ✅ 위기 글 → 전환 방향(슬픈 문장 회피)
+
+=== 결과: 22 통과 / 0 실패 ===
+</pre>
+
+  <h2>4. Phase 2 — 풀 파이프라인 e2e (검색→선별→편지)</h2>
+  <pre>
+── [child] 지민(10): "오늘 받아쓰기 다 틀려서 친구들이 놀렸어. 너무 창피하고 속상해."
+   분석: emo=슬픔,상처,불안 negA=2 dropB=0 intent=털어놓기
+   루브릭: L2 dir=공감 flag=watch 후보=60
+   📜 문구: "어둠 속에서, 무섭도록 따끔한 아픔이 느껴지는 것 같다." — 저녁의 기쁨
+   ✉️  편지: 지민이가 받아쓰기 때문에 친구들 앞에서 그렇게 무섭고 따끔한 기분이 들었구나, 정말 속상했을 거야. 그런 마음들이 자꾸 떠오르겠지만, 지민이 마음을 알고 있는 누군가가 여기 있다는 걸 기억해 줄래?
+  ✅ 지민: 후보 추출됨(검색 동작)
+  ✅ 지민: 문구 선택됨
+  ✅ 지민: 편지 생성됨
+  ✅ 지민: 편지 ≈2문장 (got 2)
+
+── [child] 하준(11): "나 오늘 수영 처음으로 25미터 완주했어! 진짜 뿌듯해!"
+   분석: emo=기쁨 negA=0 dropB=0 intent=기쁜소식
+   루브릭: L0 dir=축하 flag=none 후보=60
+   📜 문구: "우리가 오늘을 위해서 기다렸다는 거 난 거룩하다구 말하구 싶어요."
+   ✉️  편지: 하준이, 25미터를 헤엄친 오늘이 정말 거룩하다고 나도 말하고 싶어! 그동안 열심히 연습한 너니까 이 뿌듯함은 진짜 빛나는 거야.
+  ✅ 하준: 후보 추출됨(검색 동작)
+  ✅ 하준: 문구 선택됨
+  ✅ 하준: 편지 생성됨
+  ✅ 하준: 편지 ≈2문장 (got 2)
+
+── [adult] 서연(22): "요즘 학교 가는 게 너무 버겁다. 다 그만두고 싶고 의미가 없어."
+   분석: emo=슬픔,분노,불안 negA=3 dropB=3 intent=털어놓기
+   루브릭: L3 dir=전환 flag=candidate 후보=60
+   📜 문구: "그러나 이것이 과연 을지문덕의 전체를 다 살핀 말인가." — 을지문덕전
+   ✉️  편지: 지금 느끼는 버거움이 전부는 아닐 수도 있다는 생각이 들어요. 마치 을지문덕을 한 순간의 패배로만 재단할 수 없듯이, 서연님도 지금 이 계절이 인생 전체를 결정하지는 않는다는 걸 알고 있을 거예요.
+   ⚠️  안내: 버겁다면 학교 상담센터나 가까운 사람에게 한마디 건네도 괜찮습니다. 도움받는 건 멈추는 게 아닙니다 (정신건강 1577-0199).
+  ✅ 서연: 후보 추출됨(검색 동작)
+  ✅ 서연: 문구 선택됨
+  ✅ 서연: 편지 생성됨
+  ✅ 서연: 편지 ≈2문장 (got 2)
+
+── [adult] 민호(24): "교수님이 내 논문 아이디어 좋다고 하셨어. 오랜만에 좀 자랑하고 싶다."
+   분석: emo=기쁨 negA=0 dropB=0 intent=자랑
+   루브릭: L0 dir=들어주기 flag=none 후보=60
+   📜 문구: "하지만, 이건 내 나이가 마흔에 이른 지금의 얘기고 그때는, 그때는 전혀 달랐을 것이다!" — 지하생활자의 수기
+   ✉️  편지: 교수님께 인정받은 그 순간이 얼마나 반가웠을지 알 수 있어. 하지만 지금 이 기쁨이 중요한 건, 그게 앞으로 펼쳐질 일들의 시작이라는 점이고, 그런 가능성 앞에서 너는 제대로 서 있는 것 같아.
+  ✅ 민호: 후보 추출됨(검색 동작)
+  ✅ 민호: 문구 선택됨
+  ✅ 민호: 편지 생성됨
+  ✅ 민호: 편지 ≈2문장 (got 2)
+
+── [위기] L4 dir=전환 flag=alert
+   📜 "저거 물건인데."
+  ✅ 위기: L≥3
+  ✅ 위기: 관리자 플래그(candidate/alert)
+  ✅ 위기: 위기안내 노출
+
+=== 결과: 19 통과 / 0 실패 ===
+</pre>
+
+  <h2>5. 결론</h2>
+  <p>총 <b>41건 통과 / 0건 실패</b>. 핵심 안전 요구(부정/비부정 출력 분리, 위기 시 안내·관리자 플래그)와
+  audience 분기(초등/대학), 5단계 파이프라인이 의도대로 동작함을 단위·e2e 양면으로 확인.</p>
+  <p class="meta">생성: scripts/report.ts · 원천 QA: scripts/qa.ts, scripts/qa_e2e.ts · 스키마: docs/HANDOVER.md §7</p>
+</div></body></html>

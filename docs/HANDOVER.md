@@ -100,6 +100,7 @@
 | 2026-06-17 | O3→D11 확정: RAG = Turso 네이티브 벡터 검색 |
 | 2026-06-17 | O5→D12 확정: 출력 분기 = 두 축(부정도 게이트 + 의도 결) |
 | 2026-06-17 | 숨은 목적 명문화: 학생 정서 추적→학업중단 예방→학적 유지. O2 루브릭을 드롭아웃 조기경보 관점으로 재정의 |
+| 2026-06-17 | Next.js 구현(모듈화: 공유 파이프라인+audience 분기). GitHub 푸시. QA/QC: Phase1 22/0·Phase2 19/0 = 41/0. 적재 교훈 §8-1, 진행지점 §8-2 기록. 보고서 docs/qa/QA_REPORT.html |
 | 2026-06-17 | O2 선행연구 완료(docs/research/01). 실제 데이터 반입·프로파일링(docs/research/02): 작품33,401/문장230,898, emotion7·style53 |
 | 2026-06-17 | D13 확정: 매칭방향=C(레벨별 분기). D14 확정: 루브릭 5단계. D15 데이터 반입. D16 ERD 4테이블. DB 적재 착수 |
 
@@ -135,4 +136,20 @@ sentence_label (N:M)
 ## 8. 운영 메모
 - **DB 자격증명**: `maeum-donggul/.env` (TURSO_DATABASE_URL, TURSO_AUTH_TOKEN). `.gitignore`로 커밋 제외. 코드 하드코딩 금지.
 - **원천 데이터**: `maeum-donggul/data_raw/extracted/{train,val}/*.json` (gitignore됨, 용량 큼).
-- **적재 스크립트**: `maeum-donggul/scripts/`.
+- **적재 스크립트**: `maeum-donggul/scripts/` (load.py = 초기, finish_load.py = 마무리/재개).
+
+### 8-1. ⚠️ Turso 대량 적재 교훈 (반드시 숙지 — 재적재 시 시간 좌우)
+1. **원격(us-east-2) 왕복 지연이 병목.** libsql 클라이언트는 배치당 1회 네트워크 왕복 → 행 단위 `executemany`는 치명적으로 느림(행마다 왕복). **다중행 INSERT(한 statement에 N행)** 필수.
+2. **배치 크기 실측 최적값**: sentence(9컬럼, 긴 한글 텍스트) = **1000행/배치(≈1.58s, 633행/s)**. 1500행은 페이로드 과대로 **정지**(에러 없이 멈춤). sentence_label(2컬럼, 정수) = 4000행 가능. 즉 **행수가 아니라 페이로드 크기가 한계** — 텍스트 컬럼은 배치를 키우지 말 것.
+3. **Turso는 외래키(FK)를 강제한다** (일반 SQLite 기본 OFF와 다름!). → **적재 순서 고정**: work → label → **sentence(부모) → sentence_label(자식)**. 자식 먼저 넣으면 `SQLITE_CONSTRAINT: FOREIGN KEY constraint failed`.
+4. **멱등 재개**: 모든 INSERT는 `INSERT OR IGNORE`. 중단 후 재개 시 DB에서 기존 id를 `SELECT`해 메모리 목록을 필터링하면 재전송 낭비 제거(finish_load.py 방식).
+5. **libsql 파라미터는 tuple로** 전달(list 불가: `'list' object cannot be converted to 'PyTuple'`). 변수 한도 ~32766 내(1000행×9컬럼=9000 OK).
+6. **백그라운드 stdout은 버퍼링** → 진행 확인은 별도 연결로 `SELECT count(*)` 직접 조회가 확실.
+- 전체 규모: sentence 259,417 / sentence_label 414,048 → 최적 배치로 약 4~5분.
+
+### 8-2. 📌 적재 진행 지점 (2026-06-17, 데모 우선 처리)
+- **sentence: 219,000 / 259,417 적재됨.** 나머지 **약 40,417건 미적재(이연)**.
+- **sentence_label: 적재된 219k 문장에 한해서만 채우는 중**(`scripts/demo_load.py`, FK 충족 위해 존재하는 부모만). 배치 8000.
+- **데모/QA는 이 부분 데이터로 충분** — 7개 감정 라벨 모두 충분한 후보 확보됨.
+- **남은 보충 작업(데모 후)**: ① 미적재 sentence ~40k 마저 적재 → ② 그 문장들의 sentence_label 추가. `scripts/finish_load.py`(문장 먼저→라벨, 멱등)로 재개. 반드시 FK 순서 준수.
+- 재개 명령: `python3 scripts/finish_load.py` (기존 id는 자동 스킵).
