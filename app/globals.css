@@ -1,0 +1,267 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f1ea;
+  --foreground: #2e2a24;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Nanum Myeongjo", Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Landing ---------- */
+.landing {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: radial-gradient(120% 90% at 50% 0%, #faf7f0 0%, #ece6d8 60%, #ddd3bf 100%);
+}
+.landing-inner {
+  max-width: 640px;
+  text-align: center;
+}
+.landing .kicker {
+  letter-spacing: 0.3em;
+  font-size: 0.78rem;
+  color: #9a8c72;
+  margin-bottom: 1rem;
+}
+.landing h1 {
+  font-size: clamp(2.6rem, 8vw, 4.4rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0 0 1.2rem;
+  color: #2e2a24;
+}
+.landing .lead {
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: #5b5345;
+  margin-bottom: 2.6rem;
+}
+.doors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 520px) {
+  .doors {
+    grid-template-columns: 1fr;
+  }
+}
+.door {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.8rem 1.4rem;
+  border-radius: 18px;
+  text-decoration: none;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 6px 20px rgba(120, 100, 70, 0.08);
+}
+.door:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(120, 100, 70, 0.16);
+}
+.door-child {
+  background: #fdf6ec;
+}
+.door-adult {
+  background: #fbfaf6;
+}
+.door-label {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2e2a24;
+}
+.door-child .door-label {
+  font-family: "Gaegu", "Gowun Dodum", sans-serif;
+  color: #c9774e;
+}
+.door-sub {
+  font-size: 0.86rem;
+  color: #8a7d66;
+}
+.landing .foot {
+  margin-top: 2.4rem;
+  font-size: 0.82rem;
+  color: #a99c83;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Cave (shared experience, themed via CSS vars) ---------- */
+.cave {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.25rem;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+}
+.cave-inner {
+  width: 100%;
+  max-width: 560px;
+}
+.cave-head {
+  text-align: center;
+  margin-bottom: 1.8rem;
+}
+.cave-head h1 {
+  font-size: clamp(1.9rem, 6vw, 2.6rem);
+  margin: 0 0 0.6rem;
+  letter-spacing: 0.04em;
+}
+.cave[data-audience="child"] .cave-head h1 {
+  font-family: "Gaegu", "Gowun Dodum", sans-serif;
+}
+.cave-head p {
+  color: color-mix(in srgb, var(--ink) 65%, transparent);
+  line-height: 1.7;
+  font-size: 0.98rem;
+}
+
+.cave-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.cave-form .row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0.8rem;
+}
+.cave-form input,
+.cave-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  background: var(--card);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.cave-form input:focus,
+.cave-form textarea:focus {
+  border-color: var(--accent);
+}
+.cave-form textarea {
+  resize: vertical;
+  line-height: 1.7;
+}
+.cave-form .err {
+  color: #b5654a;
+  font-size: 0.86rem;
+  margin: 0;
+}
+.cave button {
+  margin-top: 0.4rem;
+  padding: 0.95rem 1rem;
+  border: none;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1.02rem;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.cave button:hover {
+  filter: brightness(1.05);
+}
+.cave button:active {
+  transform: translateY(1px);
+}
+.cave button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.cave button.ghost {
+  margin-top: 1.6rem;
+  background: transparent;
+  color: color-mix(in srgb, var(--ink) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+/* ---------- Result card ---------- */
+.cave-result {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  animation: rise 0.5s ease both;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 2.6rem 2rem;
+  text-align: center;
+  box-shadow: 0 14px 40px color-mix(in srgb, var(--accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.card .phrase {
+  font-size: clamp(1.25rem, 4.5vw, 1.7rem);
+  line-height: 1.7;
+  margin: 0;
+  color: var(--ink);
+  word-break: keep-all;
+}
+.card .source {
+  margin-top: 1.3rem;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+.letter {
+  margin-top: 1.4rem;
+  padding: 1.4rem 1.5rem;
+  background: color-mix(in srgb, var(--card) 70%, var(--bg));
+  border-radius: 16px;
+  border-left: 3px solid var(--accent);
+}
+.letter-heading {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+.letter p {
+  margin: 0;
+  line-height: 1.9;
+  font-size: 1.02rem;
+  word-break: keep-all;
+}
+.crisis {
+  margin-top: 1.2rem;
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--card));
+  color: color-mix(in srgb, var(--ink) 85%, transparent);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
