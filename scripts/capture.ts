@@ -19,9 +19,9 @@ async function fillAndCapture(
   await page.getByLabel("나이").fill(opts.age);
   await page.getByLabel("마음").fill(opts.text);
   await page.locator(".cave button").first().click();
-  // LLM 응답 대기 — 카드 문구가 뜰 때까지
-  await page.locator(".card .phrase").waitFor({ timeout: 60000 });
-  await page.waitForTimeout(500);
+  // LLM 응답 대기 — 수집 카드(.mcard) 또는 기본 카드(.card)
+  await page.locator(".mcard-phrase, .card .phrase").first().waitFor({ timeout: 90000 });
+  await page.waitForTimeout(1200);
   await page.screenshot({ path: join(OUT, opts.file), fullPage: true });
   console.log(`  📸 ${opts.file}`);
 }

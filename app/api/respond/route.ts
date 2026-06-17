@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runPipeline } from "@/lib/pipeline";
 import { getAudience } from "@/lib/audience";
-import type { UserInput } from "@/lib/types";
+import { buildCardMeta } from "@/lib/card/spirit";
+import type { UserInput, Emotion } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -35,12 +36,22 @@ export async function POST(req: NextRequest) {
     // 사용자에게 내려보낼 안전 안내(레벨별). 관리자 플래그/분석점수는 내부 보관용이라 노출 최소화.
     const crisisNotice = audience.crisisNotice(result.rubric.level);
 
+    // 마음 카드 메타 — 카드의 "타입"은 골라준 문학 문장의 감정.
+    const cardEmotion: Emotion =
+      result.selected?.emotions?.[0] ?? result.analysis.emotions[0] ?? "무감정";
+    const cardMeta = buildCardMeta({
+      emotion: cardEmotion,
+      style: result.selected?.styles?.[0] ?? null,
+      sentenceId: result.selected?.id ?? "none",
+    });
+
     return NextResponse.json({
       card: {
         phrase: result.output.phrase,
         source: result.output.source,
         letter: result.output.letter,
         heading: audience.copy.letterHeading,
+        meta: cardMeta,
       },
       crisisNotice,
       theme: audience.theme,

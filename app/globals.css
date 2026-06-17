@@ -265,3 +265,203 @@ body {
   font-size: 0.9rem;
   line-height: 1.7;
 }
+
+/* ============ 마음 카드 (수집 카드) ============ */
+.mcard-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.reveal-kicker {
+  text-align: center; font-family: "Gaegu", sans-serif; font-size: 1.15rem;
+  color: var(--accent); margin: 0 0 .2rem; animation: pop .5s ease both;
+}
+@keyframes pop { from { transform: scale(.9); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+
+.mcard {
+  position: relative;
+  width: min(88vw, 340px);
+  border-radius: 24px;
+  padding: 13px;
+  background: linear-gradient(165deg, var(--c) 0%, var(--deep) 100%);
+  box-shadow: 0 18px 44px rgba(0,0,0,.22), 0 3px 0 rgba(255,255,255,.4) inset;
+  overflow: hidden;
+  isolation: isolate;
+  animation: cardIn .6s cubic-bezier(.2,.9,.25,1.1) both;
+  font-family: "Gowun Dodum", sans-serif;
+}
+@keyframes cardIn { from { transform: translateY(16px) rotate(-2deg); opacity: 0 } to { transform: none; opacity: 1 } }
+
+/* 포일 광택 */
+.mcard-foil { position: absolute; inset: 0; z-index: 5; pointer-events: none; border-radius: 24px; }
+.rarity-rare .mcard-foil {
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.45) 47%, transparent 60%);
+  background-size: 250% 250%; mix-blend-mode: screen; animation: sheen 3.5s linear infinite;
+}
+.rarity-holo .mcard-foil {
+  background: linear-gradient(115deg, transparent 25%, rgba(255,255,255,.5) 38%, transparent 46%),
+    conic-gradient(from 0deg, #ff5e8a, #ffd84d, #5be0c0, #5b8def, #c06bff, #ff5e8a);
+  background-size: 250% 250%, 180% 180%;
+  mix-blend-mode: color-dodge; opacity: .42; animation: sheen 3s linear infinite, hue 6s linear infinite;
+}
+@keyframes sheen { 0% { background-position: 0% 0% } 100% { background-position: 200% 200% } }
+@keyframes hue { to { filter: hue-rotate(360deg) } }
+
+/* 상단 바 */
+.mcard-top { display: flex; align-items: center; justify-content: space-between; padding: 2px 6px 8px; color: #fff; }
+.mcard-name { font-weight: 700; font-size: 1.28rem; text-shadow: 0 1px 2px rgba(0,0,0,.25); display: flex; align-items: baseline; gap: 6px; font-family: "Gaegu", sans-serif; }
+.mcard-stage { font-size: .62rem; background: rgba(255,255,255,.3); padding: 2px 6px; border-radius: 6px; font-weight: 700; }
+.mcard-hp { display: flex; align-items: center; gap: 4px; font-weight: 800; font-size: 1.15rem; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.mcard-hp span { font-size: .62rem; color: #ffe9a8; }
+.mcard-type { width: 24px; height: 24px; display: grid; place-items: center; background: rgba(255,255,255,.9); border-radius: 50%; font-style: normal; font-size: .9rem; box-shadow: 0 2px 4px rgba(0,0,0,.2); }
+
+/* 아트 창 */
+.mcard-art {
+  position: relative; height: 208px; border-radius: 14px; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 38%, #fff 0%, var(--soft) 55%, var(--c) 130%);
+  border: 3px solid rgba(255,255,255,.85); box-shadow: 0 4px 12px rgba(0,0,0,.12) inset;
+  display: grid; place-items: center;
+}
+.mcard-art-glow { position: absolute; width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--c) 55%, transparent), transparent); }
+.mcard-art svg { position: relative; z-index: 2; filter: drop-shadow(0 6px 10px rgba(0,0,0,.18)); }
+.mcard-art::before, .mcard-art::after {
+  content: "✦"; position: absolute; color: #fff; opacity: .85; z-index: 3; font-size: .7rem;
+  text-shadow: 0 0 6px var(--c);
+}
+.mcard-art::before { top: 18px; left: 22px; font-size: 1rem; }
+.mcard-art::after { bottom: 26px; right: 26px; }
+.mcard-style-tag {
+  position: absolute; bottom: 8px; left: 8px; z-index: 4; font-family: "Gaegu", sans-serif;
+  background: rgba(0,0,0,.42); color: #fff; padding: 2px 9px; border-radius: 999px; font-size: .8rem;
+}
+
+/* 정보 스트립 */
+.mcard-info { display: flex; justify-content: space-between; align-items: center; color: #fff; padding: 7px 6px 6px; font-size: .72rem; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.mcard-rare { padding: 2px 8px; border-radius: 999px; font-weight: 800; }
+.rare-common { background: rgba(255,255,255,.28); }
+.rare-rare { background: #fff; color: var(--deep); }
+.rare-holo { background: linear-gradient(90deg,#ff5e8a,#ffd84d,#5be0c0,#5b8def); color: #fff; }
+
+/* 패널 공통 */
+.mcard-mine, .mcard-move { background: rgba(255,255,255,.94); border-radius: 12px; padding: 10px 12px; margin-top: 8px; }
+.mcard-move-head { font-size: .72rem; font-weight: 800; color: var(--deep); margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+.mcard-mine-text { margin: 0; font-family: "Gaegu", sans-serif; font-size: .98rem; line-height: 1.45; color: #4a4a4a; word-break: keep-all;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.mcard-phrase { margin: 0; font-size: 1.02rem; line-height: 1.55; color: #2b2b2b; word-break: keep-all; }
+.mcard-source { margin: 6px 0 0; font-size: .68rem; color: #9a8c72; text-align: right; }
+
+/* 푸터 */
+.mcard-foot { display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,.92); font-size: .64rem; padding: 8px 6px 2px; font-weight: 600; }
+.mcard-illus { opacity: .7; }
+
+/* 다운로드 버튼 */
+.mcard-dl {
+  width: min(88vw, 340px); padding: .9rem 1rem; border: none; border-radius: 14px; cursor: pointer;
+  background: var(--accent); color: #fff; font-family: "Gaegu", sans-serif; font-size: 1.05rem;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 40%, transparent); transition: transform .1s, filter .15s;
+}
+.mcard-dl:hover { filter: brightness(1.06); }
+.mcard-dl:active { transform: translateY(1px); }
+.mcard-dl:disabled { opacity: .6; }
+
+.letter-note { margin-top: 1.4rem; }
+
+/* ============ 카드 액션(공유/저장) ============ */
+.mcard-actions { display: flex; gap: 8px; width: min(88vw, 340px); }
+.mcard-actions .mcard-dl { width: auto; flex: 1; padding: .85rem .6rem; font-size: .98rem; box-shadow: none; }
+.mcard-dl.primary { background: linear-gradient(135deg, #ff8a5b, #ff5e8a); color: #fff; box-shadow: 0 8px 20px rgba(255,94,138,.35); }
+.mcard-dl.ghost-dl { background: #fff; color: #8a7d66; border: 1.5px solid #e3dccb; }
+
+/* ============ 홈페이지 ============ */
+.home {
+  --acc: #E07A3E;
+  font-family: "Gowun Dodum", sans-serif;
+  color: #2e2a24;
+  overflow-x: hidden;
+}
+.home .accent { color: var(--acc); }
+
+/* HERO */
+.hero {
+  position: relative; min-height: 92dvh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; padding: 3rem 1.5rem 4rem;
+  background: radial-gradient(130% 80% at 50% 0%, #fff8ee 0%, #f6efe0 45%, #efe4cf 100%);
+  overflow: hidden;
+}
+.hero-orbs { position: absolute; inset: 0; pointer-events: none; }
+.orb { position: absolute; border-radius: 50%; filter: blur(42px); opacity: .55; animation: float 9s ease-in-out infinite; }
+.orb.o1 { width: 240px; height: 240px; background: #FFC93C; top: 6%; left: -4%; }
+.orb.o2 { width: 220px; height: 220px; background: #F2789F; bottom: 8%; right: -3%; animation-delay: -3s; }
+.orb.o3 { width: 180px; height: 180px; background: #5B8DEF; top: 30%; right: 16%; animation-delay: -6s; }
+@keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-22px) } }
+
+.hero-badge {
+  position: relative; z-index: 2; display: inline-block; background: #2e2a24; color: #fff;
+  font-size: .8rem; padding: .5rem 1rem; border-radius: 999px; letter-spacing: .02em; margin-bottom: 1.6rem;
+}
+.hero h1 {
+  position: relative; z-index: 2; font-size: clamp(2.3rem, 8vw, 4rem); font-weight: 700;
+  line-height: 1.28; margin: 0 0 1.2rem; letter-spacing: .01em;
+}
+.hero-sub { position: relative; z-index: 2; font-size: clamp(1rem, 3vw, 1.15rem); line-height: 1.9; color: #6b6051; margin: 0 0 2.2rem; }
+.hero-sub b { color: var(--acc); }
+.hero-cta { position: relative; z-index: 2; display: flex; gap: .8rem; flex-wrap: wrap; justify-content: center; }
+.cta {
+  text-decoration: none; padding: 1rem 1.6rem; border-radius: 999px; font-size: 1.05rem; font-weight: 700;
+  transition: transform .12s, box-shadow .15s, filter .15s;
+}
+.cta.primary { background: linear-gradient(135deg, #ff9a4d, var(--acc)); color: #fff; box-shadow: 0 12px 28px rgba(224,122,62,.38); }
+.cta:not(.primary) { background: #fff; color: #2e2a24; border: 1.5px solid #e3dccb; }
+.cta:hover { transform: translateY(-3px); }
+.hero-mini { position: relative; z-index: 2; margin-top: 1.4rem; font-size: .82rem; color: #a99c83; }
+
+/* SECTIONS */
+.sect { padding: 4.5rem 1.5rem; max-width: 1040px; margin: 0 auto; text-align: center; }
+.sect.tint { max-width: none; background: linear-gradient(180deg, #faf6ec, #f3ecdc); }
+.sect.tint > * { max-width: 1040px; margin-left: auto; margin-right: auto; }
+.sect-kicker { letter-spacing: .25em; font-size: .72rem; color: var(--acc); font-weight: 700; margin: 0 0 .6rem; }
+.home .accent, .sect-kicker { font-family: "Gowun Dodum", sans-serif; }
+.sect h2 { font-size: clamp(1.6rem, 5vw, 2.3rem); font-weight: 700; margin: 0 0 .7rem; }
+.sect-sub { color: #7a6f5d; line-height: 1.8; margin: 0 0 2.2rem; font-size: 1rem; }
+
+/* GALLERY rail */
+.gallery-rail {
+  display: flex; gap: 1.2rem; overflow-x: auto; padding: 1rem .5rem 1.6rem; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch; justify-content: flex-start;
+}
+.gallery-rail::-webkit-scrollbar { height: 6px; }
+.gallery-rail::-webkit-scrollbar-thumb { background: #d9cfb8; border-radius: 999px; }
+.gallery-item { scroll-snap-align: center; flex: 0 0 auto; transition: transform .2s; }
+.gallery-item:nth-child(odd) { transform: rotate(-1.5deg); }
+.gallery-item:nth-child(even) { transform: rotate(1.5deg); }
+.gallery-item:hover { transform: translateY(-8px) rotate(0); }
+@media (min-width: 880px) { .gallery-rail { justify-content: center; } }
+.rail-hint { font-size: .8rem; color: #b0a285; margin: .4rem 0 0; }
+
+/* DEX */
+.dex-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: .8rem; }
+@media (max-width: 760px) { .dex-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 420px) { .dex-grid { grid-template-columns: repeat(3, 1fr); } }
+.dex-cell { display: flex; flex-direction: column; align-items: center; gap: .35rem; padding: 1rem .4rem;
+  background: #fff; border-radius: 18px; border: 1px solid #efe7d6; box-shadow: 0 6px 16px rgba(120,100,70,.07); transition: transform .15s; }
+.dex-cell:hover { transform: translateY(-4px); }
+.dex-orb { width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--c) 22%, #fff), #fff); }
+.dex-name { font-family: "Gaegu", sans-serif; font-weight: 700; font-size: 1.05rem; color: #2e2a24; }
+.dex-type { font-size: .72rem; color: #8a7d66; }
+
+/* STEPS */
+.steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; text-align: center; }
+@media (max-width: 700px) { .steps { grid-template-columns: 1fr; } }
+.steps li { background: #fff; border-radius: 20px; padding: 2rem 1.4rem; border: 1px solid #efe7d6; box-shadow: 0 8px 22px rgba(120,100,70,.07); }
+.step-n { display: grid; place-items: center; width: 46px; height: 46px; margin: 0 auto 1rem; border-radius: 50%;
+  background: linear-gradient(135deg, #ff9a4d, var(--acc)); color: #fff; font-weight: 800; font-size: 1.3rem; }
+.steps b { display: block; font-size: 1.15rem; margin-bottom: .5rem; }
+.steps p { margin: 0; color: #7a6f5d; line-height: 1.7; font-size: .95rem; }
+
+/* DOORS on home */
+.home-doors { max-width: 620px; margin: 0 auto; }
+.door-emoji { font-size: 2rem; }
+.home-doors .door { align-items: center; text-align: center; padding: 2.2rem 1.4rem; }
+
+/* FOOT */
+.home-foot { text-align: center; padding: 3rem 1.5rem 4rem; color: #8a7d66; line-height: 1.9; font-size: .9rem;
+  background: #efe4cf; }
+.home-foot b { color: #2e2a24; }

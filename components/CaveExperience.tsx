@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
+import MaeumCard from "./MaeumCard";
+import type { CardMeta } from "@/lib/card/spirit";
 
 // 클라이언트로 넘기는 직렬화 가능한 audience 뷰 (함수 제외)
 export interface AudienceView {
@@ -26,6 +28,7 @@ interface CardData {
   source: { title: string | null; author: string | null; genre: string | null };
   letter: string;
   heading: string;
+  meta?: CardMeta;
 }
 
 // 공유 경험 — 입력 → 카드+편지. 톤/테마/카피는 audience로만 분기.
@@ -38,6 +41,7 @@ export default function CaveExperience({ audience }: { audience: AudienceView })
   const [error, setError] = useState<string | null>(null);
   const [card, setCard] = useState<CardData | null>(null);
   const [crisis, setCrisis] = useState<string | null>(null);
+  const [submittedText, setSubmittedText] = useState("");
 
   const cssVars = {
     "--bg": theme.bg,
@@ -66,6 +70,7 @@ export default function CaveExperience({ audience }: { audience: AudienceView })
       if (!res.ok) {
         setError(data.error ?? "잠시 후 다시 시도해주세요.");
       } else {
+        setSubmittedText(text);
         setCard(data.card);
         setCrisis(data.crisisNotice ?? null);
       }
@@ -121,7 +126,28 @@ export default function CaveExperience({ audience }: { audience: AudienceView })
           </section>
         )}
 
-        {card && (
+        {card && key === "child" && card.meta && (
+          <section className="cave-result">
+            <p className="reveal-kicker">두근두근… 오늘의 마음 카드!</p>
+            <MaeumCard
+              phrase={card.phrase}
+              source={card.source}
+              meta={card.meta}
+              ownerName={name || undefined}
+              userText={submittedText}
+            />
+            <div className="letter letter-note">
+              <span className="letter-heading">{card.heading}</span>
+              <p>{card.letter}</p>
+            </div>
+            {crisis && <div className="crisis">{crisis}</div>}
+            <button className="ghost" onClick={reset}>
+              {copy.againLabel}
+            </button>
+          </section>
+        )}
+
+        {card && (key !== "child" || !card.meta) && (
           <section className="cave-result">
             <article className="card">
               <p className="phrase">“{card.phrase}”</p>
