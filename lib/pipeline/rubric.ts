@@ -46,26 +46,19 @@ function decideDirection(level: RubricLevel, a: EmotionAnalysis): MatchDirection
 }
 
 /**
- * 매칭 방향 → 후보로 끌어올 target emotions.
- * 공감=같은 결(사용자 부정 감정), 전환·축하·들어주기=기쁨 계열.
+ * 매칭 방향 → 후보로 끌어올 target emotions = "기능(톤)" 기준.
+ * 데이터 라벨은 '문장이 품은 감정'이라, 슬픔 라벨을 주면 위로가 아니라 슬픔의 파편이 됨.
+ * 따라서 위로/응원은 슬픔을 미러링하지 않고 **따뜻·희망 시구**(기쁨/무감정)로 간다.
+ * 어떤 결인지는 select.ts의 기능 프롬프트가 최종 선별한다.
  */
-export function targetEmotionsFor(
-  dir: MatchDirection,
-  a: EmotionAnalysis
-): Emotion[] {
+export function targetEmotionsFor(dir: MatchDirection, _a: EmotionAnalysis): Emotion[] {
   switch (dir) {
-    case "공감": {
-      // 사용자의 부정 감정과 같은 결. 없으면 슬픔/상처로 폴백.
-      const neg = a.emotions.filter((e) =>
-        (["슬픔", "분노", "불안", "당황", "상처"] as Emotion[]).includes(e)
-      );
-      return neg.length ? neg : ["슬픔", "상처"];
-    }
     case "축하":
     case "들어주기":
+      // 밝고 빛나는 기쁨 시구
       return ["기쁨"];
-    case "전환":
-      // 안전 모드: 밝되 과하지 않게. 기쁨 + 무감정(잔잔함)
+    case "공감": // 위로 — 따뜻·희망 위주(슬픔 미러링 제거)
+    case "전환": // 응원/안전 — 다독임·희망
       return ["기쁨", "무감정"];
   }
 }

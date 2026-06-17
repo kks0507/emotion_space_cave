@@ -20,11 +20,19 @@ export async function runPipeline(
   const rubric = evaluateRubric(analysis);
   const targetEmotions = targetEmotionsFor(rubric.direction, analysis);
 
-  // 3단계 후보 추출
-  const candidates = await fetchCandidates(targetEmotions, { limit: 60 });
+  // 3단계 후보 추출 — 시(詩) 전용 풀 우선. 너무 적으면 전체 장르로 폴백.
+  let candidates = await fetchCandidates(targetEmotions, { limit: 60 });
+  if (candidates.length < 6) {
+    candidates = await fetchCandidates(targetEmotions, { limit: 60, genre: null });
+  }
 
-  // 4단계 선별
-  const { selected, usedVector } = await selectBest(candidates, input, analysis);
+  // 4단계 선별 (기능/톤 기반)
+  const { selected, usedVector } = await selectBest(
+    candidates,
+    input,
+    analysis,
+    rubric.direction
+  );
 
   // 5단계 카드 + 편지
   const output = await composeCardLetter({

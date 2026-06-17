@@ -36,12 +36,13 @@ export async function POST(req: NextRequest) {
     // 사용자에게 내려보낼 안전 안내(레벨별). 관리자 플래그/분석점수는 내부 보관용이라 노출 최소화.
     const crisisNotice = audience.crisisNotice(result.rubric.level);
 
-    // 마음 카드 메타 — 카드의 "타입"은 골라준 문학 문장의 감정.
+    // 마음 카드 메타 — 정령은 "아이의 감정"을 비춘다(슬픈 아이=방울이 + 따뜻한 시구).
+    // 시구의 감정이 아니라 사용자 분석 감정을 카드 타입으로.
     const cardEmotion: Emotion =
-      result.selected?.emotions?.[0] ?? result.analysis.emotions[0] ?? "무감정";
+      result.analysis.emotions[0] ?? result.selected?.emotions?.[0] ?? "무감정";
     const cardMeta = buildCardMeta({
       emotion: cardEmotion,
-      style: result.selected?.styles?.[0] ?? null,
+      style: result.analysis.styles?.[0] ?? result.selected?.styles?.[0] ?? null,
       sentenceId: result.selected?.id ?? "none",
     });
 
